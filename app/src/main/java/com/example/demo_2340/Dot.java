@@ -9,17 +9,22 @@ public class Dot {
     private static final long MAX_LIFETIME = 10000; // Time out after 10 seconds
     private long visibleStartTime;
 
-    public Dot(float x, float y, int radius) {
+    public Dot(float x, float y, int radius, long visibleStartTime) {
         this.x = x;
         this.y = y;
         this.radius = radius;
         this.isVisible = true;
 
         // TODO Record the time when the dot becomes visible
+        this.visibleStartTime = visibleStartTime;
 
     }
 
-    public boolean isExpired() {
+    public boolean isExpired(long timer) {
+        if (timer - this.visibleStartTime > MAX_LIFETIME) {
+            return true;
+        }
+        return false;
         // TODO Check if the dot has exceeded its max lifetime
     }
 
@@ -41,5 +46,6 @@ public class Dot {
 
     public void setInvisible() {
         isVisible = false;
+        radius = 0;
     }
 }

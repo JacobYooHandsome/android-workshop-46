@@ -33,6 +33,8 @@ public class GameActivity extends AppCompatActivity {
     private double difficulty;
     private int dotsToWin;
 
+    private long milis;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,6 +70,7 @@ public class GameActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        milis += 500;
                         checkCollisions();
                         respawnDotsIfNeeded();
                     }
@@ -79,11 +82,40 @@ public class GameActivity extends AppCompatActivity {
     // Handle key events to move the player
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        // TODO logic to move the player (remember to check collisions)
+        if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+            playerY -= 40;
+            playerView.updatePosition(playerX, playerY);
+            checkCollisions();
+            return true;
+        }
+        if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+            playerY += 40;
+            playerView.updatePosition(playerX, playerY);
+            checkCollisions();
+            return true;
+        }
+        if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) {
+            playerX -= 40;
+            playerView.updatePosition(playerX, playerY);
+            checkCollisions();
+            return true;
+        }
+        if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
+            playerX += 40;
+            playerView.updatePosition(playerX, playerY);
+            checkCollisions();
+            return true;
+        }
+        return false;
     }
 
     private void initializeDots() {
         // TODO Create and add dots with random positions
+        for (int i = 0; i < 20; i++) {
+            Dot newDot = new Dot((float)random.nextInt(screenWidth), (float)random.nextInt(screenHeight), 15, milis);
+            dots.add(newDot);
+        }
+        drawDots();
     }
 
     /*
@@ -100,11 +132,16 @@ public class GameActivity extends AppCompatActivity {
     // Maintains 20 dots on screen
     private void respawnDotsIfNeeded() {
         // TODO: if dots drop below 20, respawn dots
+        if (dots.size() < 20) {
+            respawnDot();
+        }
     }
 
     // Recreates the dots. Respawn mechanic
     private void respawnDot() {
         //TODO: randomly spawn a dot (need to make both UI and background class)
+        dots.add(new Dot((float)random.nextInt(screenWidth), (float)random.nextInt(screenHeight), 15, milis));
+        drawDots();
     }
 
     /*
@@ -115,6 +152,7 @@ public class GameActivity extends AppCompatActivity {
             Dot dot = dots.get(i);
             if (dot.isVisible() && isCollision(playerView, dot)) {
                 dot.setInvisible();
+                dotViewMap.get(dot).invalidate();
                 gameLayout.removeView(dotViewMap.get(dot));
                 dots.remove(i);
                 dotCount++;
@@ -123,8 +161,10 @@ public class GameActivity extends AppCompatActivity {
                 if (dotCount >= dotsToWin) {
                     launchGameWinActivity();
                 }
-            } else if (dot.isExpired()) { // TODO: Checks if dots have expired.
-                
+            } else if (dot.isExpired(milis)) { // TODO: Checks if dots have expired.
+                dot.setInvisible();
+                dotViewMap.get(dot).invalidate();
+                dots.remove(i);
             }
         }
     }
